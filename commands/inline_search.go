@@ -40,7 +40,7 @@ func InlineSearchHandler(ctx *core.InlineQuery) {
 			card.ID,
 			storedArticle.Title,
 			storedArticle.Description,
-			storedArticle.InputMessageContent.MessageText,
+			"",
 			rawQuery,
 		); err != nil {
 			log.Printf("inline result upsert error: %v", err)

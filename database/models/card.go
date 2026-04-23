@@ -51,7 +51,8 @@ func scanCard(rowScanner interface {
 }
 
 func CreateCard(userID int64, title string, cardNumber string, masked string, expiryDate string, lastFour string, bankBinID int64) (*Card, error) {
-	encryptedNumber := encryptCardNumber(strings.TrimSpace(cardNumber))
+	normalizedNumber := digitsOnly(cardNumber)
+	encryptedNumber := encryptCardNumber(normalizedNumber)
 	_, err := database.Exec(`INSERT INTO cards (user_id, title, card_number, card_number_masked, expiry_date, last_four, bank_bin_id, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
 		userID,
@@ -74,8 +75,12 @@ func CreateCard(userID int64, title string, cardNumber string, masked string, ex
 }
 
 func CardExistsByUserAndNumber(userID int64, cardNumber string) (bool, error) {
-	encryptedNumber := encryptCardNumber(strings.TrimSpace(cardNumber))
-	row := database.QueryRow(`SELECT id FROM cards WHERE user_id = ? AND card_number = ? LIMIT 1`, userID, encryptedNumber)
+	normalizedNumber := digitsOnly(cardNumber)
+	encryptedNumber := encryptCardNumber(normalizedNumber)
+	row := database.QueryRow(`SELECT id FROM cards
+		WHERE user_id = ?
+		  AND (card_number = ? OR card_number = ?)
+		LIMIT 1`, userID, encryptedNumber, normalizedNumber)
 	var id int64
 	err := row.Scan(&id)
 	if err != nil {
@@ -249,25 +254,47 @@ func ListCardsByUserByChoicePriority(userID int64, limit int) ([]*Card, error) {
 }
 
 func listCardsByUserAndCardNumber(userID int64, numberQuery string, limit int) ([]*Card, error) {
-	numberQuery = strings.TrimSpace(numberQuery)
+	numberQuery = digitsOnly(numberQuery)
 	if numberQuery == "" {
 		return []*Card{}, nil
 	}
 
 	lastFourLike := "%" + numberQuery + "%"
+	maskedLike := "%" + numberQuery + "%"
+	encryptedQuery := encryptCardNumber(numberQuery)
 	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ?
-		  AND c.last_four LIKE ?
+		  AND (
+		    c.card_number = ?
+		    OR c.card_number = ?
+		    OR c.last_four LIKE ?
+		    OR REPLACE(c.card_number_masked, ' ', '') LIKE ?
+		  )
 		ORDER BY
 		  CASE
-		    WHEN c.last_four LIKE ? THEN 0
-		    ELSE 1
+		    WHEN c.card_number = ? OR c.card_number = ? THEN 0
+		    WHEN c.last_four = ? THEN 1
+		    WHEN REPLACE(c.card_number_masked, ' ', '') LIKE ? THEN 2
+		    WHEN c.last_four LIKE ? THEN 3
+		    ELSE 4
 		  END,
 		  c.updated_at DESC,
 		  c.id DESC
-		LIMIT ?`, userID, lastFourLike, numberQuery+"%", limit)
+		LIMIT ?`,
+		userID,
+		encryptedQuery,
+		numberQuery,
+		lastFourLike,
+		maskedLike,
+		encryptedQuery,
+		numberQuery,
+		numberQuery,
+		numberQuery+"%",
+		lastFourLike,
+		limit,
+	)
 	if err != nil {
 		return nil, err
 	}

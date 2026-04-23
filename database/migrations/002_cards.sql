@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `cards`
     `id`                 BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id`            BIGINT UNSIGNED NOT NULL,
     `title`              VARCHAR(255)    NOT NULL,
-    `card_number`        VARCHAR(32)     NOT NULL,
+    `card_number`        VARCHAR(128)    NOT NULL,
     `card_number_masked` VARCHAR(64)     NOT NULL,
     `last_four`          VARCHAR(8)      NOT NULL,
     `created_at`         DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,

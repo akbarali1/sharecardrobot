@@ -24,9 +24,22 @@ mysql -u root -p share_card_robot < database/migrations/002_cards.sql
 mysql -u root -p share_card_robot < database/migrations/003_inline_search_results.sql
 mysql -u root -p share_card_robot < database/migrations/004_cards_add_bank_bin_id.sql
 mysql -u root -p share_card_robot < database/migrations/005_cards_add_expiry_date.sql
+mysql -u root -p share_card_robot < database/migrations/006_cards_encrypt_card_number.sql
 ```
 
-4. botni ishga tushiring:
+4. karta raqamlarini encrypt qilish uchun AES-256 key yarating:
+
+```bash
+openssl rand -base64 32
+```
+
+Chiqqan qiymatni `.env` ichiga qo'shing:
+
+```bash
+CARD_ENCRYPTION_KEY=generated_base64_value
+```
+
+5. botni ishga tushiring:
 
 ```bash
 go run .

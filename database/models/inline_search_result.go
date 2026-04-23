@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"html"
 	"strconv"
 	"strings"
 	"time"
@@ -118,10 +117,7 @@ func IncrementInlineSearchResultChoice(resultID string, query string, userID int
 		card.ID,
 		card.Title,
 		card.CardNumberMasked,
-		fmt.Sprintf("💳 <b>%s</b>\n<code>%s</code>",
-			html.EscapeString(strings.TrimSpace(card.Title)),
-			html.EscapeString(strings.TrimSpace(card.CardNumber)),
-		),
+		"",
 		query,
 	); err != nil {
 		return err
