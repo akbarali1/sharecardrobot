@@ -15,7 +15,7 @@ func AboutHandler(ctx *core.Update) {
 🌐 <b>Ochiq manba (Open Source):</b>
 Loyiha butunlay ochiq — kodni ko'rish, taklif kiritish yoki o'z serveringizda ishlatishingiz mumkin.
 
-🔗 <a href="https://github.com/akbarali1/share_card_robot">github.com/akbarali1/share_card_robot</a>`, config.Version)
+🔗 <a href="https://github.com/akbarali1/sharecardrobot">github.com/akbarali1/sharecardrobot</a>`, config.Version)
 
 	_, _ = ctx.SendMessage(text, map[string]interface{}{
 		"disable_web_page_preview": true,
