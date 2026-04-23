@@ -26,3 +26,28 @@ func RequireCurrentUser(next func(*core.Update)) func(*core.Update) {
 		next(ctx)
 	}
 }
+
+func RequireCurrentUserCallback(next func(*core.CallbackQuery)) func(*core.CallbackQuery) {
+	return func(ctx *core.CallbackQuery) {
+		if ctx == nil || ctx.Message == nil || ctx.Message.Chat == nil {
+			log.Println("RequireCurrentUserCallback: callback message context is nil")
+			return
+		}
+
+		if ctx.AuthUser == nil {
+			_, _ = ctx.AnswerCallbackQuery("❌ Foydalanuvchi aniqlanmadi. /start ni qayta yuboring.", map[string]interface{}{
+				"show_alert": true,
+			})
+			return
+		}
+
+		if ctx.Message.Chat.Type != "private" {
+			_, _ = ctx.AnswerCallbackQuery("🔒 Bu amal faqat botning private chatida ishlaydi.", map[string]interface{}{
+				"show_alert": true,
+			})
+			return
+		}
+
+		next(ctx)
+	}
+}

@@ -59,10 +59,10 @@ func main() {
 		bot.HandleState("add_card_expiry", states.AddCardExpiryState, middlewares.RequireCurrentUser)
 	}
 	{
-		bot.HandleCallback(services.CallbackDeleteCardPrompt, cb.DeleteCardPromptCallback)
-		bot.HandleCallback(services.CallbackDeleteCardConfirm, cb.DeleteCardConfirmCallback)
-		bot.HandleCallback(services.CallbackDeleteCardCancel, cb.DeleteCardCancelCallback)
-		bot.HandleCallback(services.CallbackCardsPage, cb.CardsPageCallback)
+		bot.HandleCallback(services.CallbackDeleteCardPrompt, cb.DeleteCardPromptCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackDeleteCardConfirm, cb.DeleteCardConfirmCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackDeleteCardCancel, cb.DeleteCardCancelCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackCardsPage, cb.CardsPageCallback, middlewares.RequireCurrentUserCallback)
 	}
 	{
 		bot.HandleInlineQuery(commands.InlineSearchHandler, middlewares.RequireCurrentUserInline, middlewares.RequireUserHasCardsInline)
