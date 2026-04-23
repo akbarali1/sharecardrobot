@@ -74,9 +74,14 @@ func answerEmptyInline(inlineID string, message string) {
 func buildCardArticle(card *models.Card, showExpiry bool) core.InlineQueryResultArticle {
 	messageText := utils.BuildCardMessage(card.Title, card.CardNumber)
 	description := card.CardNumberMasked
-	if showExpiry && card != nil && card.ExpiryDateLabel() != "" {
+	if showExpiry && card.ExpiryDateLabel() != "" {
 		messageText = utils.BuildCardMessageWithExpiry(card.Title, card.CardNumber, card.ExpiryDateLabel())
 		description = fmt.Sprintf("%s | %s", card.CardNumberMasked, card.ExpiryDateLabel())
+	}
+
+	bins := card.BankBins()
+	if bins != nil && bins.DisplayName() != "" {
+		description = fmt.Sprintf("%s\n%s", description, bins.DisplayOnlyName())
 	}
 
 	return core.InlineQueryResultArticle{

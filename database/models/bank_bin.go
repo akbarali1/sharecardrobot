@@ -60,3 +60,11 @@ func (b *BankBin) DisplayName() string {
 
 	return strings.TrimSpace(strings.TrimSpace(b.Name) + " " + strings.TrimSpace(b.CardName))
 }
+
+func (b *BankBin) DisplayOnlyName() string {
+	if b == nil {
+		return ""
+	}
+
+	return strings.TrimSpace(strings.TrimSpace(b.Name))
+}

@@ -441,6 +441,23 @@ func (c *Card) BankNameLabel() string {
 	return strings.TrimSpace(c.BankName.String)
 }
 
+func (c *Card) BankBins() *BankBin {
+	if c == nil || !c.BankBinID.Valid || c.BankBinID.Int64 <= 0 {
+		return nil
+	}
+
+	row := database.QueryRow(`SELECT id, name, card_name, bin_code FROM bank_bins WHERE id = ? LIMIT 1`, c.BankBinID.Int64)
+	bankBin, err := scanBankBin(row)
+	if err != nil {
+		//if errors.Is(err, sql.ErrNoRows) {
+		//	return nil
+		//}
+		return nil
+	}
+
+	return bankBin
+}
+
 func (c *Card) ExpiryDateLabel() string {
 	if c == nil || !c.ExpiryDate.Valid || strings.TrimSpace(c.ExpiryDate.String) == "" {
 		return ""
