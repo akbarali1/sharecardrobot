@@ -18,7 +18,7 @@ type Card struct {
 	CardNumberMasked string
 	ExpiryDate       sql.NullString
 	LastFour         string
-	BankBinID        sql.NullInt64
+	BankBinID        int64
 	BankName         sql.NullString
 	CardTypeID       sql.NullInt64
 	CreatedAt        time.Time
@@ -442,11 +442,11 @@ func (c *Card) BankNameLabel() string {
 }
 
 func (c *Card) BankBins() *BankBin {
-	if c == nil || !c.BankBinID.Valid || c.BankBinID.Int64 <= 0 {
+	if c == nil || c.BankBinID <= 0 {
 		return nil
 	}
 
-	row := database.QueryRow(`SELECT id, name, card_name, bin_code FROM bank_bins WHERE id = ? LIMIT 1`, c.BankBinID.Int64)
+	row := database.QueryRow(`SELECT id, name, card_name, bin_code FROM bank_bins WHERE id = ? LIMIT 1`, c.BankBinID)
 	bankBin, err := scanBankBin(row)
 	if err != nil {
 		//if errors.Is(err, sql.ErrNoRows) {
