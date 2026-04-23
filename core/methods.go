@@ -372,16 +372,11 @@ func CreateWebhookHandler(router *CommandRouter) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		go dispatchAsync(router, body, update)
+		go dispatchAsync(router, update)
 	}
 }
 
-func dispatchAsync(router *CommandRouter, body map[string]interface{}, update Update) {
-	request.RequestMutex.Lock()
-	defer request.RequestMutex.Unlock()
-	defer request.ClearRequest()
-
-	request.SetRequest(body)
+func dispatchAsync(router *CommandRouter, update Update) {
 	router.Dispatch(&update)
 }
 
