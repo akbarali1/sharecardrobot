@@ -111,9 +111,13 @@ func validateTelegramResponse(method string, requestPayload []byte, body []byte)
 		return nil
 	}
 
-	if len(requestPayload) > 0 {
-		log.Printf("telegram request %s: %s", method, string(requestPayload))
-	}
+	log.Printf(
+		"telegram request failed method=%s payload_size=%d error_code=%d description=%q",
+		method,
+		len(requestPayload),
+		envelope.ErrorCode,
+		envelope.Description,
+	)
 
 	return &TelegramAPIError{
 		Method:      method,

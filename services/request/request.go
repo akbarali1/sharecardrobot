@@ -6,9 +6,6 @@ import (
 	"sync"
 )
 
-var currentRequest map[string]interface{}
-var RequestMutex sync.Mutex
-
 type parsedRequestBodyKey struct{}
 type currentUserKey struct{}
 
@@ -17,18 +14,6 @@ var (
 	userStateData = make(map[int64]map[string]string)
 	stateMutex    sync.RWMutex
 )
-
-func SetRequest(data map[string]interface{}) {
-	currentRequest = data
-}
-
-func GetRequest() map[string]interface{} {
-	return currentRequest
-}
-
-func ClearRequest() {
-	currentRequest = nil
-}
 
 func WithParsedBody(r *http.Request, body map[string]interface{}) *http.Request {
 	ctx := context.WithValue(r.Context(), parsedRequestBodyKey{}, body)
