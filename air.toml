@@ -1,0 +1,5 @@
+# Minimal config
+[build]
+cmd = "go run ."
+include_ext = ["go"]
+exclude_dir = ["vendor", "files"]
