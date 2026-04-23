@@ -27,7 +27,7 @@ mysql -u root -p share_card_robot < database/migrations/005_cards_add_expiry_dat
 mysql -u root -p share_card_robot < database/migrations/006_cards_encrypt_card_number.sql
 ```
 
-4. karta raqamlarini encrypt qilish uchun AES-256 key yarating:
+4. karta raqami va expiry dateni encrypt qilish uchun AES-256 key yarating:
 
 ```bash
 openssl rand -base64 32

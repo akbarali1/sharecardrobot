@@ -30,32 +30,40 @@ func getCardEncryptionKey() ([]byte, error) {
 // exact-match SQL lookups remain possible after encryption.
 // Returns the input unchanged when CARD_ENCRYPTION_KEY is not set.
 func encryptCardNumber(cardNumber string) string {
+	return encryptSecretValue(cardNumber)
+}
+
+func encryptExpiryDate(expiryDate string) string {
+	return encryptSecretValue(expiryDate)
+}
+
+func encryptSecretValue(value string) string {
 	key, err := getCardEncryptionKey()
 	if err != nil {
 		log.Printf("card encryption key error: %v", err)
-		return cardNumber
+		return value
 	}
 	if key == nil {
-		return cardNumber
+		return value
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		log.Printf("card encryption cipher error: %v", err)
-		return cardNumber
+		return value
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		log.Printf("card encryption gcm error: %v", err)
-		return cardNumber
+		return value
 	}
 
 	// Derive a deterministic nonce: first NonceSize bytes of HMAC-SHA256(key, plaintext).
 	mac := hmac.New(sha256.New, key)
-	mac.Write([]byte(cardNumber))
+	mac.Write([]byte(value))
 	nonce := mac.Sum(nil)[:gcm.NonceSize()]
 
-	ciphertext := gcm.Seal(nonce, nonce, []byte(cardNumber), nil)
+	ciphertext := gcm.Seal(nonce, nonce, []byte(value), nil)
 	return base64.StdEncoding.EncodeToString(ciphertext)
 }
 
@@ -63,6 +71,14 @@ func encryptCardNumber(cardNumber string) string {
 // Returns the input unchanged when CARD_ENCRYPTION_KEY is not set or when decryption
 // fails (to allow a graceful migration from pre-existing plaintext values).
 func decryptCardNumber(value string) string {
+	return decryptSecretValue(value)
+}
+
+func decryptExpiryDate(value string) string {
+	return decryptSecretValue(value)
+}
+
+func decryptSecretValue(value string) string {
 	key, err := getCardEncryptionKey()
 	if err != nil {
 		log.Printf("card encryption key error: %v", err)

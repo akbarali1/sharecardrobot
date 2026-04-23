@@ -1,2 +1,2 @@
 ALTER TABLE `cards`
-    ADD COLUMN `expiry_date` VARCHAR(5) DEFAULT NULL AFTER `card_number_masked`;
+    MODIFY COLUMN `expiry_date` VARCHAR(128) DEFAULT NULL;

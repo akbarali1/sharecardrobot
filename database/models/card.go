@@ -47,19 +47,26 @@ func scanCard(rowScanner interface {
 		return nil, err
 	}
 	card.CardNumber = decryptCardNumber(card.CardNumber)
+	if card.ExpiryDate.Valid {
+		card.ExpiryDate.String = decryptExpiryDate(card.ExpiryDate.String)
+	}
 	return &card, nil
 }
 
 func CreateCard(userID int64, title string, cardNumber string, masked string, expiryDate string, lastFour string, bankBinID int64) (*Card, error) {
 	normalizedNumber := digitsOnly(cardNumber)
 	encryptedNumber := encryptCardNumber(normalizedNumber)
+	encryptedExpiryDate := strings.TrimSpace(expiryDate)
+	if encryptedExpiryDate != "" {
+		encryptedExpiryDate = encryptExpiryDate(encryptedExpiryDate)
+	}
 	_, err := database.Exec(`INSERT INTO cards (user_id, title, card_number, card_number_masked, expiry_date, last_four, bank_bin_id, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
 		userID,
 		strings.TrimSpace(title),
 		encryptedNumber,
 		strings.TrimSpace(masked),
-		nullIfEmpty(expiryDate),
+		nullIfEmpty(encryptedExpiryDate),
 		strings.TrimSpace(lastFour),
 		bankBinID,
 	)
