@@ -3,6 +3,7 @@ package core
 import (
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -27,14 +28,19 @@ func (bot *CommandRouter) ThenMiddleware(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func SetRequest(w http.ResponseWriter, r *http.Request) (*http.Request, map[string]interface{}, bool) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // 1 MB limit
 	var body map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, "JSON xato", http.StatusBadRequest)
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			http.Error(w, "request too large", http.StatusRequestEntityTooLarge)
+		} else {
+			http.Error(w, "JSON xato", http.StatusBadRequest)
+		}
 		return r, nil, false
 	}
 	defer r.Body.Close()
 	r = request.WithParsedBody(r, body)
-	//println("Request: " + StructToString(body))
 	return r, body, true
 }
 

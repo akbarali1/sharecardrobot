@@ -46,15 +46,17 @@ func scanCard(rowScanner interface {
 	if err != nil {
 		return nil, err
 	}
+	card.CardNumber = decryptCardNumber(card.CardNumber)
 	return &card, nil
 }
 
 func CreateCard(userID int64, title string, cardNumber string, masked string, expiryDate string, lastFour string, bankBinID int64) (*Card, error) {
+	encryptedNumber := encryptCardNumber(strings.TrimSpace(cardNumber))
 	_, err := database.Exec(`INSERT INTO cards (user_id, title, card_number, card_number_masked, expiry_date, last_four, bank_bin_id, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
 		userID,
 		strings.TrimSpace(title),
-		strings.TrimSpace(cardNumber),
+		encryptedNumber,
 		strings.TrimSpace(masked),
 		nullIfEmpty(expiryDate),
 		strings.TrimSpace(lastFour),
@@ -67,12 +69,13 @@ func CreateCard(userID int64, title string, cardNumber string, masked string, ex
 	row := database.QueryRow(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
-		WHERE c.user_id = ? AND c.card_number = ? LIMIT 1`, userID, strings.TrimSpace(cardNumber))
+		WHERE c.user_id = ? AND c.card_number = ? LIMIT 1`, userID, encryptedNumber)
 	return scanCard(row)
 }
 
 func CardExistsByUserAndNumber(userID int64, cardNumber string) (bool, error) {
-	row := database.QueryRow(`SELECT id FROM cards WHERE user_id = ? AND card_number = ? LIMIT 1`, userID, strings.TrimSpace(cardNumber))
+	encryptedNumber := encryptCardNumber(strings.TrimSpace(cardNumber))
+	row := database.QueryRow(`SELECT id FROM cards WHERE user_id = ? AND card_number = ? LIMIT 1`, userID, encryptedNumber)
 	var id int64
 	err := row.Scan(&id)
 	if err != nil {
@@ -251,20 +254,20 @@ func listCardsByUserAndCardNumber(userID int64, numberQuery string, limit int) (
 		return []*Card{}, nil
 	}
 
-	numberLike := "%" + numberQuery + "%"
+	lastFourLike := "%" + numberQuery + "%"
 	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ?
-		  AND c.card_number LIKE ?
+		  AND c.last_four LIKE ?
 		ORDER BY
 		  CASE
-		    WHEN c.card_number LIKE ? THEN 0
+		    WHEN c.last_four LIKE ? THEN 0
 		    ELSE 1
 		  END,
 		  c.updated_at DESC,
 		  c.id DESC
-		LIMIT ?`, userID, numberLike, numberQuery+"%", limit)
+		LIMIT ?`, userID, lastFourLike, numberQuery+"%", limit)
 	if err != nil {
 		return nil, err
 	}
