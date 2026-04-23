@@ -8,6 +8,7 @@
 *.dll
 *.so
 *.dylib
+share_card_robot
 
 # Test binary, built with `go test -c`
 *.test
