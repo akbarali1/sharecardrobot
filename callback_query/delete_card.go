@@ -49,7 +49,7 @@ func renderCardsMessage(cb *core.CallbackQuery, page int) error {
 		page = 1
 	}
 
-	const perPage = 10
+	const perPage = 8
 
 	totalCards, err := models.CountCardsByUser(cb.AuthUser.ID)
 	if err != nil {

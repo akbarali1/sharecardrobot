@@ -62,7 +62,9 @@ func RenderCardsList(cards []*models.Card, page int, totalPages int) string {
 		lines = append(lines, fmt.Sprintf("%d. <b>%s</b>", i+1, html.EscapeString(strings.TrimSpace(card.Title))))
 		lines = append(lines, fmt.Sprintf("   <code>%s</code>", html.EscapeString(card.CardNumberMasked)))
 		details := []string{card.CardTypeLabel(), card.BankNameLabel()}
-		lines = append(lines, fmt.Sprintf("   %s", html.EscapeString(strings.Join(details, " | "))))
+		if details[0] != "" && details[1] != "" {
+			lines = append(lines, fmt.Sprintf("   %s", html.EscapeString(strings.Join(details, " | "))))
+		}
 		lines = append(lines, "")
 	}
 	if totalPages > 1 {

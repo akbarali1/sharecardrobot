@@ -420,7 +420,7 @@ func inlineQueryCardNumber(query string) (string, bool) {
 
 func (c *Card) CardTypeLabel() string {
 	if c == nil || !c.CardTypeID.Valid {
-		return "Noma'lum"
+		return ""
 	}
 
 	switch c.CardTypeID.Int64 {
@@ -435,7 +435,7 @@ func (c *Card) CardTypeLabel() string {
 
 func (c *Card) BankNameLabel() string {
 	if c == nil || !c.BankName.Valid || strings.TrimSpace(c.BankName.String) == "" {
-		return "Bank topilmadi"
+		return ""
 	}
 
 	return strings.TrimSpace(c.BankName.String)

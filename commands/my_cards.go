@@ -9,7 +9,7 @@ import (
 )
 
 func MyCardsHandler(ctx *core.Update) {
-	const perPage = 10
+	const perPage = 8
 
 	totalCards, err := models.CountCardsByUser(ctx.AuthUser.ID)
 	if err != nil {
