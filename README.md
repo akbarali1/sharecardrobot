@@ -22,7 +22,6 @@ Bu bot foydalanuvchining karta raqamlarini saqlaydi va keyin ularni inline qidir
 mysql -u root -p share_card_robot < database/migrations/001_users.sql
 mysql -u root -p share_card_robot < database/migrations/002_cards.sql
 mysql -u root -p share_card_robot < database/migrations/003_inline_search_results.sql
-mysql -u root -p share_card_robot < database/migrations/bank_bins.sql
 mysql -u root -p share_card_robot < database/migrations/004_cards_add_bank_bin_id.sql
 mysql -u root -p share_card_robot < database/migrations/005_cards_add_expiry_date.sql
 ```
