@@ -2,6 +2,7 @@ package states
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"strconv"
 	"strings"
@@ -68,12 +69,12 @@ func AddCardExpiryState(ctx *core.Update) {
 	ctx.ClearState()
 	_, _ = ctx.SendMessage(fmt.Sprintf(
 		"✅ Karta saqlandi.\n\n<b>%s</b>\n<code>%s</code>%s\n<i>%s</i>\n\nInline qidiruv uchun: <code>@%s %s</code>",
-		card.Title,
-		card.CardNumberMasked,
+		html.EscapeString(card.Title),
+		html.EscapeString(card.CardNumberMasked),
 		expiryLine,
-		bankBinLabel,
+		html.EscapeString(bankBinLabel),
 		core.BotUsername,
-		card.LastFour,
+		html.EscapeString(card.LastFour),
 	), map[string]interface{}{
 		"reply_markup": utils.BuildSavedCardInlineMarkup(card.LastFour),
 	})
