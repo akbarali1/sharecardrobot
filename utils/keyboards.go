@@ -73,7 +73,7 @@ func RenderCardsList(cards []*models.Card, page int, totalPages int) string {
 		lines = append(lines, fmt.Sprintf("Sahifa: %d/%d", page, totalPages))
 		lines = append(lines, "")
 	}
-	lines = append(lines, "Karta ustidagi tugma orqali taxrirlashingiz mumkin.")
+	lines = append(lines, "Karta ustidagi tugma orqali tahrirlashingiz mumkin.")
 
 	return strings.Join(lines, "\n")
 }
@@ -145,7 +145,7 @@ func RenderEditCard(card *models.Card) string {
 	}
 
 	lines := []string{
-		"✏️ <b>Kartani taxrirlash</b>",
+		"✏️ <b>Kartani tahrirlash</b>",
 		"",
 		fmt.Sprintf("<b>Nomi:</b> %s", html.EscapeString(strings.TrimSpace(card.Title))),
 		fmt.Sprintf("<b>Raqami:</b> <code>%s</code>", html.EscapeString(card.CardNumberMasked)),
@@ -171,7 +171,7 @@ func RenderEditCard(card *models.Card) string {
 		}
 	}
 
-	lines = append(lines, "", "Kerakli bo'limni tanlab taxrir qiling.")
+	lines = append(lines, "", "Kerakli bo'limni tanlab tahrir qiling.")
 	return strings.Join(lines, "\n")
 }
 
@@ -179,13 +179,13 @@ func BuildEditCardMarkup(cardID int64, page int) *core.InlineKeyboardMarkup {
 	return &core.InlineKeyboardMarkup{
 		InlineKeyboard: [][]core.KeyboardButton{
 			{
-				core.NewCallbackButtonWithPage("✏️ Nomini taxrirlash", services.CallbackEditCardTitle, int(cardID), page),
+				core.NewCallbackButtonWithPage("✏️ Nomini tahrirlash", services.CallbackEditCardTitle, int(cardID), page),
 			},
 			{
-				core.NewCallbackButtonWithPage("💳 Raqamini taxrirlash", services.CallbackEditCardNumber, int(cardID), page),
+				core.NewCallbackButtonWithPage("💳 Raqamini tahrirlash", services.CallbackEditCardNumber, int(cardID), page),
 			},
 			{
-				core.NewCallbackButtonWithPage("📅 Muddatini taxrirlash", services.CallbackEditCardExpiry, int(cardID), page),
+				core.NewCallbackButtonWithPage("📅 Muddatini tahrirlash", services.CallbackEditCardExpiry, int(cardID), page),
 			},
 			{
 				core.NewCallbackButton("⬅️ Kartalar ro'yxati", services.CallbackCardsPage, page),
