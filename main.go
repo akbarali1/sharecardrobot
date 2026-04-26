@@ -11,6 +11,7 @@ import (
 	"share_card_robot/config"
 	"share_card_robot/core"
 	"share_card_robot/database"
+	"share_card_robot/database/models"
 	"share_card_robot/middlewares"
 	"share_card_robot/services"
 	"share_card_robot/states"
@@ -21,6 +22,10 @@ func main() {
 
 	if err := config.LoadDotEnv(".env"); err != nil {
 		panic("Failed to load .env: " + err.Error())
+	}
+
+	if err := models.ValidateCardEncryptionConfig(); err != nil {
+		panic("Failed to validate CARD_ENCRYPTION_KEY: " + err.Error())
 	}
 
 	if err := database.InitConnection(); err != nil {

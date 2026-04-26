@@ -7,16 +7,14 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"log"
 	"os"
 )
 
 // getCardEncryptionKey reads and validates the AES-256 key from CARD_ENCRYPTION_KEY.
-// Returns nil key (no error) when the env var is unset, enabling plaintext fallback.
 func getCardEncryptionKey() ([]byte, error) {
 	keyB64 := os.Getenv("CARD_ENCRYPTION_KEY")
 	if keyB64 == "" {
-		return nil, nil
+		return nil, errors.New("CARD_ENCRYPTION_KEY is required")
 	}
 	key, err := base64.StdEncoding.DecodeString(keyB64)
 	if err != nil || len(key) != 32 {
@@ -25,10 +23,14 @@ func getCardEncryptionKey() ([]byte, error) {
 	return key, nil
 }
 
+func ValidateCardEncryptionConfig() error {
+	_, err := getCardEncryptionKey()
+	return err
+}
+
 // encryptCardNumber encrypts a card number using AES-256-GCM.
 // A deterministic nonce derived from HMAC-SHA256(key, plaintext) is used so that
 // exact-match SQL lookups remain possible after encryption.
-// Returns the input unchanged when CARD_ENCRYPTION_KEY is not set.
 func encryptCardNumber(cardNumber string) string {
 	return encryptSecretValue(cardNumber)
 }
@@ -40,22 +42,16 @@ func encryptExpiryDate(expiryDate string) string {
 func encryptSecretValue(value string) string {
 	key, err := getCardEncryptionKey()
 	if err != nil {
-		log.Printf("card encryption key error: %v", err)
-		return value
-	}
-	if key == nil {
-		return value
+		panic(err)
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Printf("card encryption cipher error: %v", err)
-		return value
+		panic(err)
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Printf("card encryption gcm error: %v", err)
-		return value
+		panic(err)
 	}
 
 	// Derive a deterministic nonce: first NonceSize bytes of HMAC-SHA256(key, plaintext).
@@ -68,8 +64,6 @@ func encryptSecretValue(value string) string {
 }
 
 // decryptCardNumber decrypts a card number that was encrypted with encryptCardNumber.
-// Returns the input unchanged when CARD_ENCRYPTION_KEY is not set or when decryption
-// fails (to allow a graceful migration from pre-existing plaintext values).
 func decryptCardNumber(value string) string {
 	return decryptSecretValue(value)
 }
@@ -81,39 +75,31 @@ func decryptExpiryDate(value string) string {
 func decryptSecretValue(value string) string {
 	key, err := getCardEncryptionKey()
 	if err != nil {
-		log.Printf("card encryption key error: %v", err)
-		return value
-	}
-	if key == nil {
-		return value
+		panic(err)
 	}
 
 	data, err := base64.StdEncoding.DecodeString(value)
 	if err != nil {
-		// Not base64 – likely a pre-existing plaintext value.
-		return value
+		panic(err)
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Printf("card decryption cipher error: %v", err)
-		return value
+		panic(err)
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Printf("card decryption gcm error: %v", err)
-		return value
+		panic(err)
 	}
 
 	nonceSize := gcm.NonceSize()
 	if len(data) < nonceSize {
-		return value
+		panic("encrypted value is shorter than GCM nonce size")
 	}
 
 	plaintext, err := gcm.Open(nil, data[:nonceSize], data[nonceSize:], nil)
 	if err != nil {
-		// Decryption failed – return as-is (plaintext migration period).
-		return value
+		panic(err)
 	}
 	return string(plaintext)
 }
