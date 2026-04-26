@@ -77,4 +77,7 @@ func AddCardExpiryState(ctx *core.Update) {
 	), map[string]interface{}{
 		"reply_markup": utils.BuildSavedCardInlineMarkup(card.LastFour),
 	})
+	_, _ = ctx.SendMessage("Asosiy menyu", map[string]interface{}{
+		"reply_markup": utils.MainKeyboard(),
+	})
 }
