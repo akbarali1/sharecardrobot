@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -137,7 +138,7 @@ func sendTelegram(method string, data map[string]interface{}) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), telegramAPITimeout)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("telegram %s build request: %w", method, err)
 	}
