@@ -99,6 +99,25 @@ func CardExistsByUserAndNumber(userID int64, cardNumber string) (bool, error) {
 	return id > 0, nil
 }
 
+func CardExistsByUserAndNumberExceptID(userID int64, cardID int64, cardNumber string) (bool, error) {
+	normalizedNumber := digitsOnly(cardNumber)
+	encryptedNumber := encryptCardNumber(normalizedNumber)
+	row := database.QueryRow(`SELECT id FROM cards
+		WHERE user_id = ?
+		  AND id <> ?
+		  AND (card_number = ? OR card_number = ?)
+		LIMIT 1`, userID, cardID, encryptedNumber, normalizedNumber)
+	var id int64
+	err := row.Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return id > 0, nil
+}
+
 func ListCardsByUser(userID int64, limit int) ([]*Card, error) {
 	if limit <= 0 {
 		limit = 50
@@ -404,6 +423,65 @@ func DeleteCardByIDAndUser(cardID int64, userID int64) error {
 		return fmt.Errorf("card not found")
 	}
 	return nil
+}
+
+func UpdateCardTitleByIDAndUser(cardID int64, userID int64, title string) (*Card, error) {
+	result, err := database.Exec(`UPDATE cards
+		SET title = ?, updated_at = NOW()
+		WHERE id = ? AND user_id = ?
+		LIMIT 1`, strings.TrimSpace(title), cardID, userID)
+	if err != nil {
+		return nil, err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err == nil && rowsAffected == 0 {
+		return nil, fmt.Errorf("card not found")
+	}
+	return GetCardByIDAndUser(cardID, userID)
+}
+
+func UpdateCardNumberByIDAndUser(cardID int64, userID int64, cardNumber string, masked string, lastFour string, bankBinID int64) (*Card, error) {
+	normalizedNumber := digitsOnly(cardNumber)
+	encryptedNumber := encryptCardNumber(normalizedNumber)
+	result, err := database.Exec(`UPDATE cards
+		SET card_number = ?, card_number_masked = ?, last_four = ?, bank_bin_id = ?, updated_at = NOW()
+		WHERE id = ? AND user_id = ?
+		LIMIT 1`,
+		encryptedNumber,
+		strings.TrimSpace(masked),
+		strings.TrimSpace(lastFour),
+		bankBinID,
+		cardID,
+		userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err == nil && rowsAffected == 0 {
+		return nil, fmt.Errorf("card not found")
+	}
+	return GetCardByIDAndUser(cardID, userID)
+}
+
+func UpdateCardExpiryByIDAndUser(cardID int64, userID int64, expiryDate string) (*Card, error) {
+	encryptedExpiryDate := strings.TrimSpace(expiryDate)
+	if encryptedExpiryDate != "" {
+		encryptedExpiryDate = encryptExpiryDate(encryptedExpiryDate)
+	}
+
+	result, err := database.Exec(`UPDATE cards
+		SET expiry_date = ?, updated_at = NOW()
+		WHERE id = ? AND user_id = ?
+		LIMIT 1`, nullIfEmpty(encryptedExpiryDate), cardID, userID)
+	if err != nil {
+		return nil, err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err == nil && rowsAffected == 0 {
+		return nil, fmt.Errorf("card not found")
+	}
+	return GetCardByIDAndUser(cardID, userID)
 }
 
 func digitsOnly(value string) string {

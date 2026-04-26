@@ -55,8 +55,12 @@ func (c *CallbackQuery) BaseEditMessageText(messageID int, text string, opts ...
 		return nil, errors.New("callback edit message text: message is nil")
 	}
 
+	return EditMessageText(c.Message.Chat.ID, messageID, text, opts...)
+}
+
+func EditMessageText(chatID int64, messageID int, text string, opts ...map[string]interface{}) (map[string]interface{}, error) {
 	data := map[string]interface{}{
-		"chat_id":    c.Message.Chat.ID,
+		"chat_id":    chatID,
 		"message_id": messageID,
 		"text":       text,
 		"parse_mode": "HTML",

@@ -57,12 +57,19 @@ func main() {
 		bot.HandleState("add_card_name", states.AddCardNameState, middlewares.RequireCurrentUser)
 		bot.HandleState("add_card_number", states.AddCardNumberState, middlewares.RequireCurrentUser)
 		bot.HandleState("add_card_expiry", states.AddCardExpiryState, middlewares.RequireCurrentUser)
+		bot.HandleState("edit_card_title", states.EditCardTitleState, middlewares.RequireCurrentUser)
+		bot.HandleState("edit_card_number", states.EditCardNumberState, middlewares.RequireCurrentUser)
+		bot.HandleState("edit_card_expiry", states.EditCardExpiryState, middlewares.RequireCurrentUser)
 	}
 	{
 		bot.HandleCallback(services.CallbackDeleteCardPrompt, cb.DeleteCardPromptCallback, middlewares.RequireCurrentUserCallback)
 		bot.HandleCallback(services.CallbackDeleteCardConfirm, cb.DeleteCardConfirmCallback, middlewares.RequireCurrentUserCallback)
 		bot.HandleCallback(services.CallbackDeleteCardCancel, cb.DeleteCardCancelCallback, middlewares.RequireCurrentUserCallback)
 		bot.HandleCallback(services.CallbackCardsPage, cb.CardsPageCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackEditCardMenu, cb.EditCardMenuCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackEditCardTitle, cb.EditCardTitleCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackEditCardNumber, cb.EditCardNumberCallback, middlewares.RequireCurrentUserCallback)
+		bot.HandleCallback(services.CallbackEditCardExpiry, cb.EditCardExpiryCallback, middlewares.RequireCurrentUserCallback)
 	}
 	{
 		bot.HandleInlineQuery(commands.InlineSearchHandler, middlewares.RequireCurrentUserInline, middlewares.RequireUserHasCardsInline)

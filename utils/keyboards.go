@@ -15,6 +15,8 @@ func MainKeyboard() *core.ReplyKeyboardMarkup {
 		Keyboard: [][]core.ReplyKeyboardButton{
 			{
 				{Text: "➕ Karta qo'shish"},
+			},
+			{
 				{Text: "💳 Mening kartalarim"},
 			},
 		},
@@ -71,7 +73,7 @@ func RenderCardsList(cards []*models.Card, page int, totalPages int) string {
 		lines = append(lines, fmt.Sprintf("Sahifa: %d/%d", page, totalPages))
 		lines = append(lines, "")
 	}
-	lines = append(lines, "Karta ustidagi tugma orqali o'chirishingiz mumkin.")
+	lines = append(lines, "Karta ustidagi tugma orqali taxrirlashingiz mumkin.")
 
 	return strings.Join(lines, "\n")
 }
@@ -84,9 +86,9 @@ func BuildCardsListMarkup(cards []*models.Card, page int, totalPages int) *core.
 	buttons := make([]core.KeyboardButton, 0, len(cards))
 	for i, card := range cards {
 		buttons = append(buttons, core.KeyboardButton{
-			Text: fmt.Sprintf("🗑 %d", i+1),
+			Text: fmt.Sprintf("✏️ %d", i+1),
 			CallbackData: core.CallbackData{
-				Type: services.CallbackDeleteCardPrompt,
+				Type: services.CallbackEditCardMenu,
 				ID:   int(card.ID),
 				Page: page,
 			},
@@ -132,6 +134,61 @@ func BuildDeletePromptMarkup(cardID int64, page int) *core.InlineKeyboardMarkup 
 			},
 			{
 				core.NewCallbackButtonWithPage("⬅️ Bekor qilish", services.CallbackDeleteCardCancel, 0, page),
+			},
+		},
+	}
+}
+
+func RenderEditCard(card *models.Card) string {
+	if card == nil {
+		return "❌ Karta topilmadi."
+	}
+
+	lines := []string{
+		"✏️ <b>Kartani taxrirlash</b>",
+		"",
+		fmt.Sprintf("<b>Nomi:</b> %s", html.EscapeString(strings.TrimSpace(card.Title))),
+		fmt.Sprintf("<b>Raqami:</b> <code>%s</code>", html.EscapeString(card.CardNumberMasked)),
+	}
+
+	expiry := card.ExpiryDateLabel()
+	if expiry == "" {
+		expiry = "Kiritilmagan"
+	}
+	lines = append(lines, fmt.Sprintf("<b>Amal qilish muddati:</b> <code>%s</code>", html.EscapeString(expiry)))
+
+	details := []string{card.CardTypeLabel(), card.BankNameLabel()}
+	if details[0] != "" || details[1] != "" {
+		filtered := make([]string, 0, len(details))
+		for _, detail := range details {
+			detail = strings.TrimSpace(detail)
+			if detail != "" {
+				filtered = append(filtered, detail)
+			}
+		}
+		if len(filtered) > 0 {
+			lines = append(lines, fmt.Sprintf("<b>Qo'shimcha:</b> %s", html.EscapeString(strings.Join(filtered, " | "))))
+		}
+	}
+
+	lines = append(lines, "", "Kerakli bo'limni tanlab taxrir qiling.")
+	return strings.Join(lines, "\n")
+}
+
+func BuildEditCardMarkup(cardID int64, page int) *core.InlineKeyboardMarkup {
+	return &core.InlineKeyboardMarkup{
+		InlineKeyboard: [][]core.KeyboardButton{
+			{
+				core.NewCallbackButtonWithPage("✏️ Nomini taxrirlash", services.CallbackEditCardTitle, int(cardID), page),
+			},
+			{
+				core.NewCallbackButtonWithPage("💳 Raqamini taxrirlash", services.CallbackEditCardNumber, int(cardID), page),
+			},
+			{
+				core.NewCallbackButtonWithPage("📅 Muddatini taxrirlash", services.CallbackEditCardExpiry, int(cardID), page),
+			},
+			{
+				core.NewCallbackButton("⬅️ Kartalar ro'yxati", services.CallbackCardsPage, page),
 			},
 		},
 	}
