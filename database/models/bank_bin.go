@@ -13,6 +13,7 @@ type BankBin struct {
 	Name     string
 	CardName string
 	BinCode  string
+	Image    sql.NullString
 }
 
 func scanBankBin(rowScanner interface {
@@ -24,6 +25,7 @@ func scanBankBin(rowScanner interface {
 		&bankBin.Name,
 		&bankBin.CardName,
 		&bankBin.BinCode,
+		&bankBin.Image,
 	)
 	if err != nil {
 		return nil, err
@@ -37,7 +39,7 @@ func FindBankBinByCardNumber(cardNumber string) (*BankBin, error) {
 		return nil, nil
 	}
 
-	row := database.QueryRow(`SELECT id, name, card_name, bin_code
+	row := database.QueryRow(`SELECT id, name, card_name, bin_code, image
 		FROM bank_bins
 		WHERE CAST(LEFT(?, CHAR_LENGTH(bin_code)) AS BINARY) = CAST(bin_code AS BINARY)
 		ORDER BY CHAR_LENGTH(bin_code) DESC, id ASC

@@ -70,7 +70,11 @@ type InlineQueryResultArticle struct {
 	Type                string                   `json:"type"`
 	ID                  string                   `json:"id"`
 	Title               string                   `json:"title"`
+	URL                 string                   `json:"url,omitempty"`
 	Description         string                   `json:"description,omitempty"`
+	ThumbnailURL        string                   `json:"thumbnail_url,omitempty"`
+	ThumbnailWidth      int                      `json:"thumbnail_width,omitempty"`
+	ThumbnailHeight     int                      `json:"thumbnail_height,omitempty"`
 	InputMessageContent *InputTextMessageContent `json:"input_message_content"`
 	ReplyMarkup         *InlineKeyboardMarkup    `json:"reply_markup,omitempty"`
 }

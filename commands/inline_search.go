@@ -84,11 +84,16 @@ func buildCardArticle(card *models.Card, showExpiry bool) core.InlineQueryResult
 		description = fmt.Sprintf("%s\n%s", description, bins.DisplayOnlyName())
 	}
 
+	thumb := card.Thumbnail()
+
 	return core.InlineQueryResultArticle{
-		Type:        "article",
-		ID:          inlineResultID(card.ID, showExpiry),
-		Title:       card.Title,
-		Description: description,
+		Type:            "article",
+		ID:              inlineResultID(card.ID, showExpiry),
+		Title:           card.Title,
+		Description:     description,
+		ThumbnailURL:    thumb.URL,
+		ThumbnailWidth:  thumb.Width,
+		ThumbnailHeight: thumb.Height,
 		InputMessageContent: &core.InputTextMessageContent{
 			MessageText: messageText,
 			ParseMode:   "HTML",

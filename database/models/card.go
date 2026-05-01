@@ -21,8 +21,15 @@ type Card struct {
 	BankBinID        int64
 	BankName         sql.NullString
 	CardTypeID       sql.NullInt64
+	BankImage        sql.NullString
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+}
+
+type Thumbnail struct {
+	URL    string `json:"url"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
 }
 
 func scanCard(rowScanner interface {
@@ -40,6 +47,7 @@ func scanCard(rowScanner interface {
 		&card.BankBinID,
 		&card.BankName,
 		&card.CardTypeID,
+		&card.BankImage,
 		&card.CreatedAt,
 		&card.UpdatedAt,
 	)
@@ -74,7 +82,7 @@ func CreateCard(userID int64, title string, cardNumber string, masked string, ex
 		return nil, err
 	}
 
-	row := database.QueryRow(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	row := database.QueryRow(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ? AND c.card_number = ? LIMIT 1`, userID, encryptedNumber)
@@ -123,7 +131,7 @@ func ListCardsByUser(userID int64, limit int) ([]*Card, error) {
 		limit = 50
 	}
 
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ? ORDER BY c.updated_at DESC, c.id DESC LIMIT ?`, userID, limit)
@@ -161,7 +169,7 @@ func ListCardsByUserPage(userID int64, limit int, offset int) ([]*Card, error) {
 		offset = 0
 	}
 
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ? ORDER BY c.updated_at DESC, c.id DESC LIMIT ? OFFSET ?`, userID, limit, offset)
@@ -202,7 +210,7 @@ func SearchCardsByUser(userID int64, query string, limit int) ([]*Card, error) {
 	}
 
 	titleLike := "%" + query + "%"
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ?
@@ -242,7 +250,7 @@ func ListCardsByUserByChoicePriority(userID int64, limit int) ([]*Card, error) {
 		limit = 10
 	}
 
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		LEFT JOIN (
@@ -288,7 +296,7 @@ func listCardsByUserAndCardNumber(userID int64, numberQuery string, limit int) (
 	lastFourLike := "%" + numberQuery + "%"
 	maskedLike := "%" + numberQuery + "%"
 	encryptedQuery := encryptCardNumber(numberQuery)
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ?
@@ -339,7 +347,7 @@ func listCardsByUserAndCardNumber(userID int64, numberQuery string, limit int) (
 }
 
 func listCardsByUserAndCardType(userID int64, cardTypeID int64, limit int) ([]*Card, error) {
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ? AND bb.card_type_id = ?
@@ -369,7 +377,7 @@ func listCardsByUserAndBankName(userID int64, bankName string, limit int) ([]*Ca
 	}
 
 	bankNameLike := "%" + bankName + "%"
-	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	rows, err := database.Query(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.user_id = ? AND bb.name LIKE ?
@@ -399,7 +407,7 @@ func listCardsByUserAndBankName(userID int64, bankName string, limit int) ([]*Ca
 }
 
 func GetCardByIDAndUser(cardID int64, userID int64) (*Card, error) {
-	row := database.QueryRow(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, c.created_at, c.updated_at
+	row := database.QueryRow(`SELECT c.id, c.user_id, c.title, c.card_number, c.card_number_masked, c.expiry_date, c.last_four, c.bank_bin_id, bb.name, bb.card_type_id, bb.image, c.created_at, c.updated_at
 		FROM cards c
 		LEFT JOIN bank_bins bb ON bb.id = c.bank_bin_id
 		WHERE c.id = ? AND c.user_id = ? LIMIT 1`, cardID, userID)
@@ -561,7 +569,7 @@ func (c *Card) BankBins() *BankBin {
 		return nil
 	}
 
-	row := database.QueryRow(`SELECT id, name, card_name, bin_code FROM bank_bins WHERE id = ? LIMIT 1`, c.BankBinID)
+	row := database.QueryRow(`SELECT id, name, card_name, bin_code, image FROM bank_bins WHERE id = ? LIMIT 1`, c.BankBinID)
 	bankBin, err := scanBankBin(row)
 	if err != nil {
 		//if errors.Is(err, sql.ErrNoRows) {
@@ -579,4 +587,39 @@ func (c *Card) ExpiryDateLabel() string {
 	}
 
 	return strings.TrimSpace(c.ExpiryDate.String)
+}
+
+func (c *Card) Thumbnail() Thumbnail {
+	if c == nil {
+		return Thumbnail{}
+	}
+
+	if c.BankImage.Valid && strings.TrimSpace(c.BankImage.String) != "" {
+		return Thumbnail{
+			URL:    strings.TrimSpace(c.BankImage.String),
+			Width:  225,
+			Height: 225,
+		}
+	}
+
+	if !c.CardTypeID.Valid {
+		return Thumbnail{}
+	}
+
+	switch c.CardTypeID.Int64 {
+	case 1:
+		return Thumbnail{
+			URL:    "https://i.ibb.co/TDrMR4q1/companies-16258205674660-o.jpg",
+			Width:  225,
+			Height: 225,
+		}
+	case 2:
+		return Thumbnail{
+			URL:    "https://i.ibb.co/23KKCmQx/download.png",
+			Width:  225,
+			Height: 225,
+		}
+	default:
+		return Thumbnail{}
+	}
 }
