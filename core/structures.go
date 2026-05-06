@@ -110,6 +110,11 @@ type ReplyKeyboardMarkup struct {
 	Selective       bool                    `json:"selective,omitempty"`
 }
 
+type ReplyKeyboardRemove struct {
+	RemoveKeyboard bool `json:"remove_keyboard"`
+	Selective      bool `json:"selective,omitempty"`
+}
+
 type InlineKeyboardMarkup struct {
 	InlineKeyboard  [][]KeyboardButton `json:"inline_keyboard"`
 	ResizeKeyboard  bool               `json:"resize_keyboard,omitempty"`
