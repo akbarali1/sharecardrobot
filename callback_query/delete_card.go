@@ -40,8 +40,21 @@ func DeleteCardCancelCallback(cb *core.CallbackQuery) {
 		return
 	}
 
+	card, err := models.GetCardByIDAndUser(int64(callbackData.ID), cb.AuthUser.ID)
+	if err != nil {
+		log.Printf("get card for delete cancel error: %v", err)
+		_, _ = cb.AnswerCallbackQuery("❌ Xatolik yuz berdi", map[string]interface{}{"show_alert": true})
+		return
+	}
+	if card == nil {
+		_, _ = cb.AnswerCallbackQuery("❌ Karta topilmadi", map[string]interface{}{"show_alert": true})
+		return
+	}
+
 	_, _ = cb.AnswerCallbackQuery("Bekor qilindi")
-	_ = renderCardsMessage(cb, callbackData.Page)
+	_, _ = cb.BaseEditMessageText(cb.Message.MessageID, utils.RenderEditCard(card), map[string]interface{}{
+		"reply_markup": utils.BuildEditCardMarkup(card.ID, callbackData.Page),
+	})
 }
 
 func renderCardsMessage(cb *core.CallbackQuery, page int) error {

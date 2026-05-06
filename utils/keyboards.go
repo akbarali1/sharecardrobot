@@ -137,10 +137,8 @@ func BuildDeletePromptMarkup(cardID int64, page int) *core.InlineKeyboardMarkup 
 	return &core.InlineKeyboardMarkup{
 		InlineKeyboard: [][]core.KeyboardButton{
 			{
-				core.NewCallbackButtonWithPage("✅ Ha, o'chirish", services.CallbackDeleteCardConfirm, int(cardID), page),
-			},
-			{
-				core.NewCallbackButtonWithPage("⬅️ Bekor qilish", services.CallbackDeleteCardCancel, 0, page),
+				core.NewCallbackButtonWithPage("✅ Ha", services.CallbackDeleteCardConfirm, int(cardID), page),
+				core.NewCallbackButtonWithPage("❌ Yo'q", services.CallbackDeleteCardCancel, int(cardID), page),
 			},
 		},
 	}
@@ -193,6 +191,9 @@ func BuildEditCardMarkup(cardID int64, page int) *core.InlineKeyboardMarkup {
 			},
 			{
 				core.NewCallbackButtonWithPage("📅 Muddatini tahrirlash", services.CallbackEditCardExpiry, int(cardID), page),
+			},
+			{
+				core.NewCallbackButtonWithPage("🗑 O'chirish", services.CallbackDeleteCardPrompt, int(cardID), page),
 			},
 			{
 				core.NewCallbackButton("⬅️ Kartalar ro'yxati", services.CallbackCardsPage, page),
