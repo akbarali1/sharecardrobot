@@ -14,12 +14,12 @@ var db *sql.DB
 func buildDSN() string {
 	user := os.Getenv("DB_USER")
 	if user == "" {
-		user = "root"
+		panic("DB_USER environment variable not set")
 	}
 
 	password := os.Getenv("DB_PASSWORD")
 	if password == "" {
-		password = "root"
+		panic("DB_PASSWORD environment variable not set")
 	}
 
 	host := os.Getenv("DB_HOST")

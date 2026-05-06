@@ -30,7 +30,7 @@ func EditCardMenuCallback(cb *core.CallbackQuery) {
 		return
 	}
 
-	_, _ = cb.AnswerCallbackQuery("✏️ Taxrirlash menyusi")
+	_, _ = cb.AnswerCallbackQuery("✏️ Tahrirlash menyusi")
 	_, _ = cb.BaseEditMessageText(cb.Message.MessageID, utils.RenderEditCard(card), map[string]interface{}{
 		"reply_markup": utils.BuildEditCardMarkup(card.ID, callbackData.Page),
 	})

@@ -134,7 +134,7 @@ func loadEditCardContext(ctx *core.Update) (*editCardContext, bool) {
 	cardID, err := strconv.ParseInt(strings.TrimSpace(cardIDRaw), 10, 64)
 	if err != nil || cardID <= 0 {
 		ctx.ClearState()
-		_, _ = ctx.SendMessage("❌ Taxrirlanayotgan karta topilmadi. /my_cards orqali qayta tanlang.", map[string]interface{}{
+		_, _ = ctx.SendMessage("❌ Tahrirlanayotgan karta topilmadi. /my_cards orqali qayta tanlang.", map[string]interface{}{
 			"reply_markup": utils.MainKeyboard(),
 		})
 		return nil, false
@@ -177,6 +177,13 @@ func finishCardEdit(ctx *core.Update, editCtx *editCardContext, card *models.Car
 		}); err != nil {
 			log.Printf("edit card message refresh error: %v", err)
 		}
+	}
+
+	if card == nil {
+		_, _ = ctx.SendMessage("✅ O'zgarish saqlandi, lekin kartani qayta yuklab bo'lmadi. /my_cards orqali yangilangan holatini ko'ring.", map[string]interface{}{
+			"reply_markup": utils.MainKeyboard(),
+		})
+		return
 	}
 
 	_, _ = ctx.SendMessage(fmt.Sprintf(
