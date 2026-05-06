@@ -309,29 +309,44 @@ func (bot *CommandRouter) Dispatch(update *Update) {
 		return
 	}
 
-	if update.Message != nil && update.Message.Chat != nil {
-		chatID := update.Message.Chat.ID
-		if state := request.GetUserStateByChatId(chatID); state != "" {
-			if !strings.HasPrefix(strings.TrimSpace(update.Message.Text), "/") {
-				if handler, ok := bot.states[state]; ok {
-					handler(update)
-					return
-				}
-			}
-		}
-	}
-
 	if update.Message != nil && strings.TrimSpace(update.Message.Text) != "" {
 		text := strings.TrimSpace(update.Message.Text)
+		chatID := int64(0)
+		if update.Message.Chat != nil {
+			chatID = update.Message.Chat.ID
+		}
+		state := ""
+		if chatID != 0 {
+			state = request.GetUserStateByChatId(chatID)
+		}
+		clearState := func() {
+			if chatID != 0 && state != "" {
+				request.ClearUserStateByChatId(chatID)
+				state = ""
+			}
+		}
+
 		if handler, ok := bot.commands[text]; ok {
+			clearState()
 			handler(update)
 			return
 		}
 		cmd := strings.SplitN(text, " ", 2)[0]
 		if handler, ok := bot.commands[cmd]; ok {
+			clearState()
 			handler(update)
 			return
 		}
+
+		if state != "" {
+			if strings.HasPrefix(text, "/") {
+				clearState()
+			} else if handler, ok := bot.states[state]; ok {
+				handler(update)
+				return
+			}
+		}
+
 		if handler, ok := bot.commands[services.OnQuery]; ok {
 			handler(update)
 			return
