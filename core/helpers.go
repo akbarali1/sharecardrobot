@@ -65,6 +65,16 @@ func prepareReplyMarkup(data map[string]interface{}) {
 	}
 
 	switch markup := rawMarkup.(type) {
+	case *ReplyKeyboardMarkup:
+		data["reply_markup"] = markup
+	case ReplyKeyboardMarkup:
+		copied := markup
+		data["reply_markup"] = &copied
+	case *ReplyKeyboardRemove:
+		data["reply_markup"] = markup
+	case ReplyKeyboardRemove:
+		copied := markup
+		data["reply_markup"] = &copied
 	case *InlineKeyboardMarkup:
 		data["reply_markup"] = normalizeInlineKeyboardMarkup(markup)
 	case InlineKeyboardMarkup:

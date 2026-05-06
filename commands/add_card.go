@@ -9,5 +9,7 @@ func AddCardHandler(ctx *core.Update) {
 
 	ctx.ClearState()
 	ctx.SetState("add_card_name")
-	_, _ = ctx.SendMessage("📝 Karta nomini yuboring.\n\nMasalan: <code>Asosiy karta</code>")
+	_, _ = ctx.SendMessage("📝 Karta nomini yuboring.\n\nMasalan: <code>Asosiy karta</code>", map[string]interface{}{
+		"reply_markup": &core.ReplyKeyboardRemove{RemoveKeyboard: true},
+	})
 }
