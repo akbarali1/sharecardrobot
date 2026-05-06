@@ -1,0 +1,2 @@
+ALTER TABLE `cards`
+    MODIFY COLUMN `expiry_date` VARCHAR(128) DEFAULT NULL;
