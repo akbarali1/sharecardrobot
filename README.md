@@ -1,5 +1,10 @@
 # share_card_robot
 
+> ⚠️ **2026-11-06 dan bot Telegram Serverless'da ishlaydi.** Bu repodagi Go kodi production'da ishlamaydi:
+> u tarix va favqulodda rollback uchun saqlanadi. Yangi kod
+> [akbarali1/sharecardrobot-serverless](https://github.com/akbarali1/sharecardrobot-serverless) repoda.
+> Batafsil: [docs/serverless-migration.md](./docs/serverless-migration.md).
+
 Telegram bot: https://t.me/share_card_robot
 
 Bu bot foydalanuvchining karta raqamlarini saqlaydi va keyin ularni inline qidiruv orqali topib yuboradi.
